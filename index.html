@@ -11,106 +11,163 @@
             --primary-pink: #e6b4b4;   
             --text-main: #594a4a;      
             --accent-soft: rgba(230, 180, 180, 0.15); 
+            --dark-grey: #666666; 
+            --bg-light: #fdfdfd;
         }
         
         body { 
             font-family: "Noto Sans TC", sans-serif; 
-            background: #ffffff; 
+            background: var(--bg-light); 
             color: var(--text-main); 
             margin: 0; 
-            padding: 20px; 
+            padding: 15px 10px; 
             overflow-x: hidden; 
         }
 
-        .container { width: 100%; max-width: 500px; margin: 0 auto; background: transparent; }
+        .container { width: 100%; max-width: 480px; margin: 0 auto; }
         
         .header-row {
             display: flex;
             justify-content: space-between;
-            align-items: center; /* 改為置中對齊 */
+            align-items: center;
             margin-bottom: 5px;
         }
 
-        h2 { 
-            font-size: 1.1rem; 
-            margin: 0; 
-            color: var(--primary-pink); 
-            letter-spacing: 1px; 
-            font-weight: 700; 
-        }
+        h2 { font-size: 1rem; margin: 0; color: var(--primary-pink); font-weight: 700; }
 
         #exportBtn {
-            font-size: 0.7rem;
-            color: #ccc;
+            font-size: 0.65rem;
+            color: var(--dark-grey);
             background: none;
             border: none;
             cursor: pointer;
-            padding: 0;
             text-decoration: underline;
-            transition: 0.2s;
+            opacity: 0.6;
         }
-        #exportBtn:hover { color: var(--primary-pink); }
 
         #status { 
-            font-size: 0.65rem; 
-            color: #a68a8a; 
+            font-size: 0.55rem; 
+            color: #bdc3c7; 
             margin-bottom: 10px; 
-            min-height: 18px; 
-            transition: opacity 0.5s;
+            min-height: 12px; 
         }
 
-        .input-group { display: flex; gap: 5px; margin-bottom: 15px; }
+        .input-group { 
+            display: flex; 
+            gap: 6px; 
+            margin-bottom: 15px; 
+            height: 38px;
+        }
         
         input { 
             flex: 1; 
-            padding: 8px 12px; 
+            padding: 0 12px; 
             border: 1px solid rgba(230, 180, 180, 0.3); 
             border-radius: 8px; 
             outline: none; 
-            background: #fafafa; 
-            font-size: 14px; 
+            background: #fff; 
+            font-size: 13px; 
+            height: 100%;
+            box-sizing: border-box;
         }
 
         button#addBtn { 
-            padding: 0 15px; 
-            cursor: pointer; 
+            width: 40px; 
+            height: 100%;
             background: var(--primary-pink); 
             color: white; 
             border: none; 
             border-radius: 8px; 
-            font-size: 18px; 
+            font-size: 20px; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        #symbolList { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; padding: 0; margin: 0; }
+        /* 🚀 符號列表排版 */
+        #symbolList { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 4px; /* 電腦版維持小間距 */
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            width: 100%;
+        }
 
         .symbol-item { 
-            padding: 4px 8px; 
-            background: var(--accent-soft); 
+            width: calc((100% - (9 * 4px)) / 10); 
+            aspect-ratio: 1 / 1; 
+            background: #fff; 
+            border: 1px solid rgba(230, 180, 180, 0.1);
             border-radius: 4px; 
             cursor: pointer; 
             user-select: none; 
-            font-size: 14px; 
-            transition: 0.2s; 
+            font-size: 18px; 
+            transition: background 0.2s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
         }
-        
-        .symbol-item:hover { background: var(--primary-pink); color: white; }
 
-        .hint { font-size: 0.7rem; color: #aaa; margin-top: 20px; text-align: center; }
+        /* 📱 手機版自動變貼在一起 (一列十個，間距為0) */
+        @media (max-width: 600px) {
+            #symbolList {
+                gap: 0; /* 移除所有間距 */
+            }
+            .symbol-item {
+                width: 10%; /* 剛好 10 個佔滿 100% */
+                border: 0.5px solid rgba(230, 180, 180, 0.1); /* 極細邊框區隔 */
+                border-radius: 0; /* 移除圓角讓它們完美接合 */
+                font-size: 16px; /* 手機版字體稍微微調 */
+            }
+        }
+
+        .symbol-item:hover { 
+            background: var(--primary-pink); 
+            color: white;
+        }
+
+        /* ✨ 分類標題 */
+        .symbol-item.category-tag {
+            width: 100% !important; 
+            height: auto;
+            aspect-ratio: auto;
+            background: linear-gradient(90deg, var(--accent-soft) 0%, transparent 100%);
+            color: var(--primary-pink);
+            font-size: 0.8rem;
+            padding: 10px 10px; 
+            margin-top: 15px;
+            margin-bottom: 2px; 
+            border: none;
+            justify-content: flex-start;
+            border-radius: 0;
+        }
+        .symbol-item.category-tag::before { content: "●"; margin-right: 6px; font-size: 0.5rem; }
+
+        .hint { 
+            font-size: 0.65rem; 
+            color: var(--dark-grey); 
+            margin-top: 30px; 
+            text-align: center; 
+            opacity: 0.5;
+        }
 
         #toast { 
             visibility: hidden; 
             background: rgba(89, 74, 74, 0.9); 
             color: white; 
-            padding: 6px 14px; 
+            padding: 6px 12px; 
             position: fixed; 
-            bottom: 60px; 
+            bottom: 50px; 
             left: 50%; 
             transform: translateX(-50%); 
             border-radius: 50px; 
-            font-size: 12px; 
-            opacity: 0; 
-            transition: 0.3s; 
-            z-index: 100;
+            font-size: 11px; 
+            z-index: 1000;
         }
         #toast.show { visibility: visible; opacity: 1; }
     </style>
@@ -125,13 +182,12 @@
         <div id="status"></div>
         
         <div class="input-group">
-            <input type="text" id="symbolInput" placeholder="新增符號..." maxlength="30">
+            <input type="text" id="symbolInput" placeholder="輸入符號 (#分類)" maxlength="30">
             <button id="addBtn">+</button>
         </div>
 
         <ul id="symbolList"></ul>
-        
-        <div class="hint">左鍵複製 · 長按拖動 · 右鍵刪除</div>
+        <div class="hint">左鍵複製 · 雙擊標題修改 · 長按拖動 · 右鍵刪除</div>
     </div>
 
     <div id="toast">Copied!</div>
@@ -153,12 +209,10 @@
         clearTimeout(statusTimer);
         statusText.innerText = msg;
         statusText.style.opacity = "1";
-        
         if (!isPermanent) {
             statusTimer = setTimeout(() => {
                 statusText.style.opacity = "0";
-                setTimeout(() => { if(statusText.style.opacity === "0") statusText.innerText = ""; }, 500);
-            }, 3000);
+            }, 2000);
         }
     }
 
@@ -166,12 +220,25 @@
         list.innerHTML = '';
         savedSymbols.forEach((sym, index) => {
             const li = document.createElement('li');
-            li.className = 'symbol-item';
             li.textContent = sym;
-            li.onclick = () => { 
-                navigator.clipboard.writeText(sym); 
-                showToast(`已複製`); 
-            };
+            
+            if (sym.startsWith('#')) {
+                li.className = 'symbol-item category-tag';
+                li.ondblclick = () => {
+                    const newTitle = prompt("修改分類名稱 (保留 #)：", sym);
+                    if (newTitle !== null && newTitle.trim() !== "") {
+                        savedSymbols[index] = newTitle.startsWith('#') ? newTitle : '#' + newTitle;
+                        updateData();
+                    }
+                };
+            } else {
+                li.className = 'symbol-item';
+                li.onclick = () => { 
+                    navigator.clipboard.writeText(sym); 
+                    showToast(`已複製`); 
+                };
+            }
+
             li.oncontextmenu = (e) => {
                 e.preventDefault();
                 if (confirm(`刪除「${sym}」？`)) {
@@ -194,9 +261,7 @@
                 render();
             }
             updateStatus("☁️ 已同步");
-        } catch (e) { 
-            updateStatus("⚠️ 離線模式"); 
-        }
+        } catch (e) { updateStatus("⚠️ 離線"); }
     }
 
     async function updateData() {
@@ -211,9 +276,7 @@
                 body: JSON.stringify(savedSymbols)
             });
             updateStatus("☁️ 已同步");
-        } catch (e) { 
-            updateStatus("❌ 同步失敗"); 
-        }
+        } catch (e) { updateStatus("❌ 失敗"); }
     }
 
     exportBtn.onclick = () => {
@@ -221,7 +284,7 @@
         const text = savedSymbols.join('\n');
         const blob = new Blob([text], { type: 'text/plain' });
         const anchor = document.createElement('a');
-        anchor.download = 'symbols.txt';
+        anchor.download = 'symbols_backup.txt';
         anchor.href = window.URL.createObjectURL(blob);
         anchor.click();
         window.URL.revokeObjectURL(anchor.href);
