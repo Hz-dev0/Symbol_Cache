@@ -293,9 +293,11 @@
 
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addBtn.click(); });
 
-    // 優化排序邏輯：只有位置真的變動時才同步
+// 優化排序邏輯：加入延遲以確保手機版可以正常點擊複製
     new Sortable(list, {
         animation: 150,
+        delay: 150, // 關鍵：按住 150 毫秒才觸發拖動
+        delayOnTouchOnly: true, // 只在觸控裝置上啟用延遲
         onEnd: (evt) => {
             if (evt.oldIndex !== evt.newIndex) {
                 savedSymbols = Array.from(list.children).map(li => li.textContent);
