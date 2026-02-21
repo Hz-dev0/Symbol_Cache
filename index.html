@@ -3,73 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drive Symbol Cache</title>
+    <title>Symbol Cache</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #fdf7f7 0%, #f5e7e7 100%);
             --primary-pink: #e6b4b4;   
             --text-main: #594a4a;      
             --accent-soft: rgba(230, 180, 180, 0.15); 
         }
-        body { font-family: "Noto Sans TC", sans-serif; background: var(--bg-gradient); background-attachment: fixed; color: var(--text-main); margin: 0; padding: 20px; overflow-x: hidden; }
+        
+        body { 
+            font-family: "Noto Sans TC", sans-serif; 
+            background: #ffffff; 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 20px; 
+            overflow-x: hidden; 
+        }
+
         .container { width: 100%; max-width: 500px; margin: 0 auto; background: transparent; }
-        h2 { font-size: 1.1rem; margin: 0 0 12px 0; color: var(--primary-pink); letter-spacing: 1px; font-weight: 700; }
+        
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* 改為置中對齊 */
+            margin-bottom: 5px;
+        }
+
+        h2 { 
+            font-size: 1.1rem; 
+            margin: 0; 
+            color: var(--primary-pink); 
+            letter-spacing: 1px; 
+            font-weight: 700; 
+        }
+
+        #exportBtn {
+            font-size: 0.7rem;
+            color: #ccc;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+            transition: 0.2s;
+        }
+        #exportBtn:hover { color: var(--primary-pink); }
+
+        #status { 
+            font-size: 0.65rem; 
+            color: #a68a8a; 
+            margin-bottom: 10px; 
+            min-height: 18px; 
+            transition: opacity 0.5s;
+        }
+
         .input-group { display: flex; gap: 5px; margin-bottom: 15px; }
-        input { flex: 1; padding: 8px 12px; border: 1px solid rgba(230, 180, 180, 0.4); border-radius: 8px; outline: none; background: rgba(255, 255, 255, 0.6); font-size: 14px; color: var(--text-main); }
-        button#addBtn { padding: 0 15px; cursor: pointer; background: var(--primary-pink); color: white; border: none; border-radius: 8px; font-size: 18px; }
+        
+        input { 
+            flex: 1; 
+            padding: 8px 12px; 
+            border: 1px solid rgba(230, 180, 180, 0.3); 
+            border-radius: 8px; 
+            outline: none; 
+            background: #fafafa; 
+            font-size: 14px; 
+        }
+
+        button#addBtn { 
+            padding: 0 15px; 
+            cursor: pointer; 
+            background: var(--primary-pink); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 18px; 
+        }
+
         #symbolList { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; padding: 0; margin: 0; }
-        .symbol-item { padding: 4px 8px; background: var(--accent-soft); border-radius: 4px; cursor: pointer; user-select: none; font-size: 14px; }
+
+        .symbol-item { 
+            padding: 4px 8px; 
+            background: var(--accent-soft); 
+            border-radius: 4px; 
+            cursor: pointer; 
+            user-select: none; 
+            font-size: 14px; 
+            transition: 0.2s; 
+        }
+        
         .symbol-item:hover { background: var(--primary-pink); color: white; }
-        #status { font-size: 0.6rem; color: var(--primary-pink); margin-bottom: 5px; }
-        #toast { visibility: hidden; background: rgba(89, 74, 74, 0.9); color: white; padding: 6px 14px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 50px; font-size: 12px; opacity: 0; transition: 0.3s; }
+
+        .hint { font-size: 0.7rem; color: #aaa; margin-top: 20px; text-align: center; }
+
+        #toast { 
+            visibility: hidden; 
+            background: rgba(89, 74, 74, 0.9); 
+            color: white; 
+            padding: 6px 14px; 
+            position: fixed; 
+            bottom: 60px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            border-radius: 50px; 
+            font-size: 12px; 
+            opacity: 0; 
+            transition: 0.3s; 
+            z-index: 100;
+        }
         #toast.show { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h2>📂 Drive Symbols</h2>
-        <div id="status">正在從 Google Drive 讀取...</div>
+        <div class="header-row">
+            <h2>📒符號快取</h2>
+            <button id="exportBtn">匯出</button>
+        </div>
+        <div id="status"></div>
+        
         <div class="input-group">
-            <input type="text" id="symbolInput" placeholder="新增並同步..." maxlength="30">
+            <input type="text" id="symbolInput" placeholder="新增符號..." maxlength="30">
             <button id="addBtn">+</button>
         </div>
+
         <ul id="symbolList"></ul>
+        
+        <div class="hint">左鍵複製 · 長按拖動 · 右鍵刪除</div>
     </div>
+
     <div id="toast">Copied!</div>
 
 <script>
-    // 🔗 貼入你的 Google Apps Script 網址
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbyJolADGtpgaoU2fPUxM5ZgOArXLAyJh0RNjFCqD_mnJNi7B-UN0Dsu5RqF2HtajQ92/exec'; 
+    const CACHE_KEY = 'symbol_cache_data';
 
     const input = document.getElementById('symbolInput');
     const addBtn = document.getElementById('addBtn');
     const list = document.getElementById('symbolList');
     const statusText = document.getElementById('status');
-    let savedSymbols = [];
+    const exportBtn = document.getElementById('exportBtn');
+    
+    let savedSymbols = JSON.parse(localStorage.getItem(CACHE_KEY)) || [];
+    let statusTimer;
 
-    // 從 Drive 讀取
-    async function loadData() {
-        try {
-            const res = await fetch(GAS_URL);
-            savedSymbols = await res.json();
-            statusText.innerText = "☁️ 已連線至 Google Drive";
-            render();
-        } catch (e) { statusText.innerText = "❌ 讀取失敗"; }
-    }
-
-    // 存入 Drive
-    async function saveData() {
-        statusText.innerText = "⏳ 同步中...";
-        try {
-            await fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors', // GAS 跨域限制
-                body: JSON.stringify(savedSymbols)
-            });
-            statusText.innerText = "☁️ 同步成功";
-        } catch (e) { statusText.innerText = "❌ 同步失敗"; }
+    function updateStatus(msg, isPermanent = false) {
+        clearTimeout(statusTimer);
+        statusText.innerText = msg;
+        statusText.style.opacity = "1";
+        
+        if (!isPermanent) {
+            statusTimer = setTimeout(() => {
+                statusText.style.opacity = "0";
+                setTimeout(() => { if(statusText.style.opacity === "0") statusText.innerText = ""; }, 500);
+            }, 3000);
+        }
     }
 
     function render() {
@@ -78,33 +168,81 @@
             const li = document.createElement('li');
             li.className = 'symbol-item';
             li.textContent = sym;
-            li.onclick = () => { navigator.clipboard.writeText(sym); showToast("已複製"); };
+            li.onclick = () => { 
+                navigator.clipboard.writeText(sym); 
+                showToast(`已複製`); 
+            };
             li.oncontextmenu = (e) => {
                 e.preventDefault();
                 if (confirm(`刪除「${sym}」？`)) {
                     savedSymbols.splice(index, 1);
-                    render();
-                    saveData();
+                    updateData();
                 }
             };
             list.appendChild(li);
         });
     }
 
+    async function fetchCloudData() {
+        updateStatus("⏳ 檢查更新...");
+        try {
+            const res = await fetch(GAS_URL);
+            const cloudData = await res.json();
+            if (JSON.stringify(cloudData) !== JSON.stringify(savedSymbols)) {
+                savedSymbols = cloudData;
+                localStorage.setItem(CACHE_KEY, JSON.stringify(savedSymbols));
+                render();
+            }
+            updateStatus("☁️ 已同步");
+        } catch (e) { 
+            updateStatus("⚠️ 離線模式"); 
+        }
+    }
+
+    async function updateData() {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(savedSymbols));
+        render();
+        updateStatus("⏳ 同步中...", true);
+        try {
+            await fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                cache: 'no-cache',
+                body: JSON.stringify(savedSymbols)
+            });
+            updateStatus("☁️ 已同步");
+        } catch (e) { 
+            updateStatus("❌ 同步失敗"); 
+        }
+    }
+
+    exportBtn.onclick = () => {
+        if (savedSymbols.length === 0) return;
+        const text = savedSymbols.join('\n');
+        const blob = new Blob([text], { type: 'text/plain' });
+        const anchor = document.createElement('a');
+        anchor.download = 'symbols.txt';
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+        window.URL.revokeObjectURL(anchor.href);
+    };
+
     addBtn.onclick = () => {
-        if (input.value.trim()) {
-            savedSymbols.push(input.value.trim());
+        const val = input.value.trim();
+        if (val) {
+            savedSymbols.push(val);
             input.value = '';
-            render();
-            saveData();
+            updateData();
         }
     };
+
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addBtn.click(); });
 
     new Sortable(list, {
         animation: 150,
         onEnd: () => {
             savedSymbols = Array.from(list.children).map(li => li.textContent);
-            saveData();
+            updateData();
         }
     });
 
@@ -114,7 +252,8 @@
         setTimeout(() => t.classList.remove("show"), 800);
     }
 
-    loadData();
+    render();
+    fetchCloudData();
 </script>
 </body>
 </html>
