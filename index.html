@@ -50,6 +50,7 @@
             color: #bdc3c7; 
             margin-bottom: 10px; 
             min-height: 12px; 
+            transition: opacity 0.3s;
         }
 
         .input-group { 
@@ -57,6 +58,7 @@
             gap: 6px; 
             margin-bottom: 15px; 
             height: 38px;
+            align-items: stretch;
         }
         
         input { 
@@ -84,13 +86,13 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            padding: 0;
         }
 
-        /* 🚀 符號列表排版 */
         #symbolList { 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 4px; /* 電腦版維持小間距 */
+            gap: 4px; 
             list-style: none; 
             padding: 0; 
             margin: 0; 
@@ -101,37 +103,30 @@
             width: calc((100% - (9 * 4px)) / 10); 
             aspect-ratio: 1 / 1; 
             background: #fff; 
-            border: 1px solid rgba(230, 180, 180, 0.1);
+            border: 1px solid rgba(230, 180, 180, 0.15);
             border-radius: 4px; 
             cursor: pointer; 
             user-select: none; 
             font-size: 18px; 
-            transition: background 0.2s; 
+            transition: 0.2s; 
             display: flex;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
         }
 
-        /* 📱 手機版自動變貼在一起 (一列十個，間距為0) */
         @media (max-width: 600px) {
-            #symbolList {
-                gap: 0; /* 移除所有間距 */
-            }
+            #symbolList { gap: 0; }
             .symbol-item {
-                width: 10%; /* 剛好 10 個佔滿 100% */
-                border: 0.5px solid rgba(230, 180, 180, 0.1); /* 極細邊框區隔 */
-                border-radius: 0; /* 移除圓角讓它們完美接合 */
-                font-size: 16px; /* 手機版字體稍微微調 */
+                width: 10%; 
+                border: 0.5px solid rgba(230, 180, 180, 0.1); 
+                border-radius: 0;
+                font-size: 16px;
             }
         }
 
-        .symbol-item:hover { 
-            background: var(--primary-pink); 
-            color: white;
-        }
+        .symbol-item:hover { background: var(--primary-pink); color: white; }
 
-        /* ✨ 分類標題 */
         .symbol-item.category-tag {
             width: 100% !important; 
             height: auto;
@@ -145,6 +140,7 @@
             border: none;
             justify-content: flex-start;
             border-radius: 0;
+            cursor: pointer;
         }
         .symbol-item.category-tag::before { content: "●"; margin-right: 6px; font-size: 0.5rem; }
 
@@ -162,7 +158,7 @@
             color: white; 
             padding: 6px 12px; 
             position: fixed; 
-            bottom: 50px; 
+            bottom: 60px; 
             left: 50%; 
             transform: translateX(-50%); 
             border-radius: 50px; 
@@ -210,9 +206,7 @@
         statusText.innerText = msg;
         statusText.style.opacity = "1";
         if (!isPermanent) {
-            statusTimer = setTimeout(() => {
-                statusText.style.opacity = "0";
-            }, 2000);
+            statusTimer = setTimeout(() => { statusText.style.opacity = "0"; }, 2000);
         }
     }
 
@@ -221,11 +215,10 @@
         savedSymbols.forEach((sym, index) => {
             const li = document.createElement('li');
             li.textContent = sym;
-            
             if (sym.startsWith('#')) {
                 li.className = 'symbol-item category-tag';
                 li.ondblclick = () => {
-                    const newTitle = prompt("修改分類名稱 (保留 #)：", sym);
+                    const newTitle = prompt("修改分類名稱 (請保留 #)：", sym);
                     if (newTitle !== null && newTitle.trim() !== "") {
                         savedSymbols[index] = newTitle.startsWith('#') ? newTitle : '#' + newTitle;
                         updateData();
@@ -238,7 +231,6 @@
                     showToast(`已複製`); 
                 };
             }
-
             li.oncontextmenu = (e) => {
                 e.preventDefault();
                 if (confirm(`刪除「${sym}」？`)) {
@@ -301,11 +293,14 @@
 
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addBtn.click(); });
 
+    // 優化排序邏輯：只有位置真的變動時才同步
     new Sortable(list, {
         animation: 150,
-        onEnd: () => {
-            savedSymbols = Array.from(list.children).map(li => li.textContent);
-            updateData();
+        onEnd: (evt) => {
+            if (evt.oldIndex !== evt.newIndex) {
+                savedSymbols = Array.from(list.children).map(li => li.textContent);
+                updateData();
+            }
         }
     });
 
